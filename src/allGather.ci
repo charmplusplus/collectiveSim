@@ -1,0 +1,60 @@
+module allGather {
+  readonly double alpha;
+  readonly double beta;
+
+  message allGatherMsg;
+
+  array[1D] AllGather {
+    entry AllGather(int size, int n, int type);
+    entry[reductiontarget] void initdone(int num);
+    entry void startGather();
+    entry void recvDefault(int sender, long int data[size], int size, double recvTime);
+    entry void Hypercube() {
+      for(iter = 0; iter < numHypercubeIter; iter++) {
+        serial { HypercubeToSend = thisIndex ^ ((int)pow(2, iter)); }
+        if (HypercubeToSend < n) {
+          serial {
+            long int data[hyperCubeStore.size()];
+            for(int i = 0; i < hyperCubeStore.size(); i++) {
+              data[i] = hyperCubeStore[i];
+            }
+            int dataIndx[hyperCubeIndx.size()];
+            for(int i = 0; i < hyperCubeIndx.size(); i++) {
+              dataIndx[i] = hyperCubeIndx[i];
+            }
+#ifdef TIMESTAMP
+            thisProxy(HypercubeToSend).recvHypercube(iter, data, hyperCubeStore.size(), dataIndx, hyperCubeIndx.size(), (timeStamp + alpha + beta * hyperCubeStore.size() * 8));
+            timeStamp += alpha;
+#else
+            thisProxy(HypercubeToSend).recvHypercube(iter, data, hyperCubeStore.size(), dataIndx, hyperCubeIndx.size(), 0.0);
+#endif
+          }
+          when recvHypercube[iter](int ref, long int data[size], int size, int dataIndx[indxSize], int indxSize, double recvTime) {
+            serial {
+              for(int m = 0; m < size; m++) {
+                hyperCubeStore.emplace_back(data[m]);
+              }
+              for(int m = 0; m < indxSize; m++) {
+                hyperCubeIndx.emplace_back(dataIndx[m]);
+              }
+#ifdef TIMESTAMP
+              timeStamp = std::max(recvTime, timeStamp);
+#endif
+            }
+          }
+        }
+      }
+      serial {
+        for(int m = 0; m < hyperCubeIndx.size(); m++) {
+          int currIndx = hyperCubeIndx[m];
+          for(int j = 0; j < k; j++) {
+            store[k * currIndx + j] = hyperCubeStore[m * k + j];
+          }
+        }
+        cb.send(msg);
+      }
+    };
+    entry void recvHypercube(int ref, long int data[size], int size, int dataIndx[indxSize], int indxSize, double recvTime);
+    entry void Flood(int sender, long int data[size], int size, double recvTime);
+  };
+};
