@@ -1,0 +1,42 @@
+name: build and test collectiveSim
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: build charmc
+      run: |
+        sudo apt install gcc g++
+        wget https://charm.cs.illinois.edu/distrib/charm-latest.tar.gz
+        tar xzf charm-latest.tar.gz
+        cd charm-v7.0.0
+        ./build charm++ netlrts-linux-x86_64 --with-production -j4
+
+    - name: build collectiveSim 
+      run: |
+        make CHARMC=./charm-v7.0.0/bin/charmc collectiveSim
+    
+    - name: build simulation
+      run: |
+        make CHARMC=./charm-v7.0.0/bin/charmc build-simulation
+
+    - name: Test allGather DEFAULT
+      run: |
+        make CHARMC=./charm-v7.0.0/bin/charmc TYPE=DEFAULT test-simulation
+
+    - name: Test allGather HYPERCUBE
+      run: |
+        make CHARMC=./charm-v7.0.0/bin/charmc TYPE=HYPERCUBE test-simulation
+
+    - name: Test allGather FLOODING
+      run: |
+        make CHARMC=./charm-v7.0.0/bin/charmc TYPE=FLOODING test-simulation
