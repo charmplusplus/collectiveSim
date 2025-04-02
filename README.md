@@ -4,7 +4,7 @@ A library for implementing collectives commonly used in machine learning tasks i
 
 ## allGather
 
-allGather lets you gather data distributed accross different chare array elements. The library provides 3 algorithms for doing the allGather operations, namely naive, hypercube and flooding. 
+allGather lets you gather data distributed accross different chare array elements. The library provides 3 algorithms for doing the allGather operations, namely ring, hypercube and flooding.
 
 ### How to use
 
@@ -13,14 +13,14 @@ declare allGather as an extern module in your `.ci` file and include the `allGat
 ```C++
 CkArrayOptions opts(n);
 opts.bindTo(sim);
-AllGather_array = CProxy_AllGather::ckNew(k, n, (int)allGatherType::ALL_GATHER_DEFAULT, opts);
+AllGather_array = CProxy_AllGather::ckNew(k, n, (int)allGatherType::ALL_GATHER_RING, opts);
 ```
 
 Here n refers to the size of the chare array, k refers to the number of data elements present in each chare array element and the third parameter lets you choose the algorithm you want to run. The algorithms are:
 
 ```C++
 enum allGatherType {
-  ALL_GATHER_DEFAULT,
+  ALL_GATHER_RING,
   ALL_GATHER_HYPERCUBE,
   ALL_GATHER_FLOODING
 };

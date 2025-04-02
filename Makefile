@@ -1,6 +1,6 @@
 CHARMC ?= charmc
 FLAGS = -g -Wall -O2
-TYPE ?= DEFAULT
+TYPE ?= RING
 ALLGATHER_DIR=./src/allGather
 EXAMPLE_DIR=./example
 

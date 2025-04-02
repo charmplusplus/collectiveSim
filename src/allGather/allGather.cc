@@ -40,7 +40,7 @@ AllGather::AllGather(int k, int n, int type) : k(k), n(n) {
       }
     }
   } break;
-  case allGatherType::ALL_GATHER_DEFAULT: {
+  case allGatherType::ALL_GATHER_RING: {
   } break;
   }
 }
@@ -75,15 +75,15 @@ void AllGather::startGather() {
     store[k * thisIndex + i] = data[i];
   }
   CkNcpyBuffer src(data, k*sizeof(long int), dum_dum, CK_BUFFER_UNREG);
-  
+
   switch (type) {
-  case allGatherType::ALL_GATHER_DEFAULT: {
+  case allGatherType::ALL_GATHER_RING: {
 #ifdef TIMESTAMP
-    thisProxy[(thisIndex + 1) % n].recvDefault(
+    thisProxy[(thisIndex + 1) % n].recvRing(
         thisIndex, src, (timeStamp + alpha + beta * k * 8));
     timeStamp += alpha;
 #else
-    thisProxy[(thisIndex + 1) % n].recvDefault(thisIndex, src, 0.0);
+    thisProxy[(thisIndex + 1) % n].recvRing(thisIndex, src, 0.0);
 #endif
   } break;
   case allGatherType::ALL_GATHER_HYPERCUBE: {
@@ -108,7 +108,7 @@ void AllGather::startGather() {
   }
 }
 
-void AllGather::recvDefault(int sender, CkNcpyBuffer src, double recvTime) {
+void AllGather::recvRing(int sender, CkNcpyBuffer src, double recvTime) {
   CkNcpyBuffer dst(store + sender * k, k * sizeof(long int), zero_copy_callback, CK_BUFFER_UNREG);
   dst.get(src);
 #ifdef TIMESTAMP
@@ -116,11 +116,11 @@ void AllGather::recvDefault(int sender, CkNcpyBuffer src, double recvTime) {
 #endif
   if (((thisIndex + 1) % n) != sender) {
 #ifdef TIMESTAMP
-    thisProxy[(thisIndex + 1) % n].recvDefault(
+    thisProxy[(thisIndex + 1) % n].recvRing(
         sender, src, (timeStamp + alpha + beta * k * 8));
     timeStamp += alpha;
 #else
-    thisProxy[(thisIndex + 1) % n].recvDefault(sender, src, 0.0);
+    thisProxy[(thisIndex + 1) % n].recvRing(sender, src, 0.0);
 #endif
   }
 }

@@ -9,7 +9,7 @@ module allGather {
     entry AllGather(int size, int n, int type);
     entry[reductiontarget] void initdone(int num);
     entry void startGather();
-    entry void recvDefault(int sender, CkNcpyBuffer data, double recvTime);
+    entry void recvRing(int sender, CkNcpyBuffer data, double recvTime);
     entry void local_buff_done(CkDataMsg *m);
     entry void Hypercube() {
       for(iter = 0; iter < numHypercubeIter; iter++) {

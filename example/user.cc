@@ -28,8 +28,8 @@ start::start(CkArgMsg *msg) {
   AllGather_array = CProxy_AllGather::ckNew(k, n, (int)allGatherType::ALL_GATHER_HYPERCUBE, opts);
 #endif
 
-#ifdef DEFAULT
-  AllGather_array = CProxy_AllGather::ckNew(k, n, (int)allGatherType::ALL_GATHER_DEFAULT, opts);
+#ifdef RING
+  AllGather_array = CProxy_AllGather::ckNew(k, n, (int)allGatherType::ALL_GATHER_RING, opts);
 #endif
 
   sim.begin(AllGather_array);

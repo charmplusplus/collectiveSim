@@ -13,7 +13,7 @@ class allGatherMsg : public CMessage_allGatherMsg {};
 
 // NB: ALL_GATHER_HYPERCUBE only works when the size of chare array is a power of 2.
 enum allGatherType {
-  ALL_GATHER_DEFAULT,
+  ALL_GATHER_RING,
   ALL_GATHER_HYPERCUBE,
   ALL_GATHER_FLOODING
 };
@@ -47,7 +47,7 @@ public:
 
   void startGather();
 
-  void recvDefault(int sender, CkNcpyBuffer data, double recvTime);
+  void recvRing(int sender, CkNcpyBuffer data, double recvTime);
 
   void local_buff_done(CkDataMsg *m);
 

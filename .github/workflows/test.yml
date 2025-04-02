@@ -29,9 +29,9 @@ jobs:
       run: |
         make CHARMC=./charm-v7.0.0/bin/charmc build-simulation
 
-    - name: Test allGather DEFAULT
+    - name: Test allGather RING
       run: |
-        make CHARMC=./charm-v7.0.0/bin/charmc TYPE=DEFAULT test-simulation
+        make CHARMC=./charm-v7.0.0/bin/charmc TYPE=RING test-simulation
 
     - name: Test allGather HYPERCUBE
       run: |
