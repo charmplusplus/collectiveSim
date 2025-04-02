@@ -23,14 +23,13 @@ private:
   int k{};
   int n{};
   long int *store;
-  int numDefaultMsg{};
+  int numRecvMsg{};
   double timeStamp{};
-  CkCallback cb;
+  CkCallback lib_done_callback;
   allGatherType type;
   int numHypercubeIter{};
   int iter;
   int HypercubeToSend;
-  int numAccFloodMsg{};
   std::vector<std::vector<int>> graph{};
   std::map<int, bool> recvFloodMsg{};
   int randCounter{};
@@ -38,6 +37,8 @@ private:
   std::vector<long int> hyperCubeStore{};
   allGatherMsg *msg = new allGatherMsg;
   long int* data;
+  CkCallback zero_copy_callback;
+  CkCallback dum_dum;
 
 public:
   AllGather_SDAG_CODE
@@ -46,11 +47,13 @@ public:
 
   void startGather();
 
-  void recvDefault(int sender, long int data[], int _, double recvTime);
+  void recvDefault(int sender, CkNcpyBuffer data, double recvTime);
+
+  void local_buff_done(CkDataMsg *m);
 
   int gen_rand();
 
-  void Flood(int sender, long int data[], int _, double recvTime);
+  void Flood(int sender, CkNcpyBuffer data, double recvTime);
 
   void init(long int* result, long int* data, CkCallback cb);
 

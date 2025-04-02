@@ -8,7 +8,8 @@ module allGather {
     entry AllGather(int size, int n, int type);
     entry[reductiontarget] void initdone(int num);
     entry void startGather();
-    entry void recvDefault(int sender, long int data[size], int size, double recvTime);
+    entry void recvDefault(int sender, CkNcpyBuffer data, double recvTime);
+    entry void local_buff_done(CkDataMsg *m);
     entry void Hypercube() {
       for(iter = 0; iter < numHypercubeIter; iter++) {
         serial { HypercubeToSend = thisIndex ^ ((int)pow(2, iter)); }
@@ -51,10 +52,10 @@ module allGather {
             store[k * currIndx + j] = hyperCubeStore[m * k + j];
           }
         }
-        cb.send(msg);
+        lib_done_callback.send(msg);
       }
     };
     entry void recvHypercube(int ref, long int data[size], int size, int dataIndx[indxSize], int indxSize, double recvTime);
-    entry void Flood(int sender, long int data[size], int size, double recvTime);
+    entry void Flood(int sender, CkNcpyBuffer data, double recvTime);
   };
 };

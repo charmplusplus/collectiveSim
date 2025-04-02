@@ -53,12 +53,21 @@ void AllGather::initdone(int num) {
 }
 
 void AllGather::init(long int* result, long int* data, CkCallback cb) {
-  this->cb = cb;
+  this->lib_done_callback = cb;
+  zero_copy_callback = CkCallback(CkIndex_AllGather::local_buff_done(NULL), CkArrayIndex1D(thisIndex), thisProxy);
+  dum_dum = CkCallback(CkCallback::ignore);
   this->store = result;
   this->data = data;
   int cnt = 1;
   CkCallback cbinitdone(CkReductionTarget(AllGather, initdone), thisProxy(0));
   contribute(sizeof(int), &cnt, CkReduction::sum_int, cbinitdone);
+}
+
+void AllGather::local_buff_done(CkDataMsg *m) {
+  numRecvMsg++;
+  if (numRecvMsg == n - 1) {
+    lib_done_callback.send(msg);
+  }
 }
 
 void AllGather::startGather() {
@@ -67,17 +76,14 @@ void AllGather::startGather() {
     for (int i = 0; i < k; i++) {
       store[k * thisIndex + i] = data[i];
     }
-    numDefaultMsg++;
+    CkNcpyBuffer src(data, k*sizeof(long int), dum_dum, CK_BUFFER_UNREG);
 #ifdef TIMESTAMP
     thisProxy[(thisIndex + 1) % n].recvDefault(
-        thisIndex, data, k, (timeStamp + alpha + beta * k * 8));
+        thisIndex, src, (timeStamp + alpha + beta * k * 8));
     timeStamp += alpha;
 #else
-    thisProxy[(thisIndex + 1) % n].recvDefault(thisIndex, data, k, 0.0);
+    thisProxy[(thisIndex + 1) % n].recvDefault(thisIndex, src, 0.0);
 #endif
-    if (numDefaultMsg == n) {
-      cb.send(msg);
-    }
   } break;
   case allGatherType::ALL_GATHER_HYPERCUBE: {
     hyperCubeIndx.push_back(thisIndex);
@@ -90,73 +96,59 @@ void AllGather::startGather() {
     for (int i = 0; i < k; i++) {
       store[k * thisIndex + i] = data[i];
     }
-    numAccFloodMsg++;
     recvFloodMsg[thisIndex] = true;
+    CkNcpyBuffer src(data, k*sizeof(long int), dum_dum, CK_BUFFER_UNREG);
     for (int i = 0; i < n; i++) {
       if (graph[thisIndex][i] == 1) {
 #ifdef TIMESTAMP
-        thisProxy(i).Flood(thisIndex, data, k,
+        thisProxy(i).Flood(thisIndex, src,
                            (timeStamp + alpha + beta * k * 8));
         timeStamp += alpha;
 #else
-        thisProxy(i).Flood(thisIndex, data, k, 0.0);
+        thisProxy(i).Flood(thisIndex, src, 0.0);
 #endif
       }
-    }
-    if (numAccFloodMsg == n) {
-      cb.send(msg);
     }
   } break;
   }
 }
 
-void AllGather::recvDefault(int sender, long int data[], int _,
-                            double recvTime) {
-  numDefaultMsg++;
-  for (int i = 0; i < k; i++) {
-    store[k * sender + i] = data[i];
-  }
+void AllGather::recvDefault(int sender, CkNcpyBuffer src, double recvTime) {
+  CkNcpyBuffer dst(store + sender * k, k * sizeof(long int), zero_copy_callback, CK_BUFFER_UNREG);
+  dst.get(src);
 #ifdef TIMESTAMP
   timeStamp = std::max(recvTime, timeStamp);
 #endif
   if (((thisIndex + 1) % n) != sender) {
 #ifdef TIMESTAMP
     thisProxy[(thisIndex + 1) % n].recvDefault(
-        sender, data, k, (timeStamp + alpha + beta * k * 8));
+        sender, src, (timeStamp + alpha + beta * k * 8));
     timeStamp += alpha;
 #else
-    thisProxy[(thisIndex + 1) % n].recvDefault(sender, data, k, 0.0);
+    thisProxy[(thisIndex + 1) % n].recvDefault(sender, src, 0.0);
 #endif
-  }
-  if (numDefaultMsg == n) {
-    cb.send(msg);
   }
 }
 
-void AllGather::Flood(int sender, long int data[], int _, double recvTime) {
+void AllGather::Flood(int sender, CkNcpyBuffer src, double recvTime) {
   if (recvFloodMsg[sender]) {
     return;
   }
-  numAccFloodMsg++;
   recvFloodMsg[sender] = true;
-  for (int i = 0; i < k; i++) {
-    store[k * sender + i] = data[i];
-  }
+  CkNcpyBuffer dst(store + sender * k, k * sizeof(long int), zero_copy_callback, CK_BUFFER_UNREG);
+  dst.get(src);
 #ifdef TIMESTAMP
   timeStamp = std::max(recvTime, timeStamp);
 #endif
   for (int i = 0; i < n; i++) {
     if (graph[thisIndex][i] == 1 and i != sender) {
 #ifdef TIMESTAMP
-      thisProxy(i).Flood(sender, data, k, (timeStamp + alpha + beta * k * 8));
+      thisProxy(i).Flood(sender, src, (timeStamp + alpha + beta * k * 8));
       timeStamp += alpha;
 #else
-      thisProxy(i).Flood(sender, data, k, 0.0);
+      thisProxy(i).Flood(sender, src, 0.0);
 #endif
     }
-  }
-  if (numAccFloodMsg == n) {
-    cb.send(msg);
   }
 }
 
