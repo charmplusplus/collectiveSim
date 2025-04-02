@@ -9,7 +9,7 @@ private:
   int x;
   int y;
   CProxy_simBox sim;
-  CProxy_AllGather AllGather_array;
+  CProxy_AllGather AllGather;
 
 public:
   start(CkArgMsg *msg);
@@ -30,7 +30,7 @@ private:
 public:
   simBox(CProxy_start startProxy, int k, int n, int x, int y);
 
-  void begin(CProxy_AllGather AllGather_array);
+  void begin(CProxy_AllGather AllGather);
 
   void done(allGatherMsg *msg);
 };

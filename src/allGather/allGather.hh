@@ -57,5 +57,5 @@ public:
 
   void init(long int* result, long int* data, CkCallback cb);
 
-  void initdone(int num);
+  void initdone();
 };

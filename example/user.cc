@@ -17,22 +17,19 @@ start::start(CkArgMsg *msg) {
 
   sim = CProxy_simBox::ckNew(thisProxy, k, n, x, y, n);
 
-  CkArrayOptions opts(n);
-  opts.bindTo(sim);
-
 #ifdef FLOODING
-  AllGather_array = CProxy_AllGather::ckNew(k, n, (int)allGatherType::ALL_GATHER_FLOODING, opts);
+  AllGather = CProxy_AllGather::ckNew(k, n, (int)allGatherType::ALL_GATHER_FLOODING);
 #endif
 
 #ifdef HYPERCUBE
-  AllGather_array = CProxy_AllGather::ckNew(k, n, (int)allGatherType::ALL_GATHER_HYPERCUBE, opts);
+  AllGather = CProxy_AllGather::ckNew(k, n, (int)allGatherType::ALL_GATHER_HYPERCUBE);
 #endif
 
 #ifdef RING
-  AllGather_array = CProxy_AllGather::ckNew(k, n, (int)allGatherType::ALL_GATHER_RING, opts);
+  AllGather = CProxy_AllGather::ckNew(k, n, (int)allGatherType::ALL_GATHER_RING);
 #endif
 
-  sim.begin(AllGather_array);
+  sim.begin(AllGather);
 }
 
 void start::fini(int numDone) {
@@ -57,9 +54,9 @@ simBox::simBox(CProxy_start startProxy, int k, int n, int x, int y)
   }
 }
 
-void simBox::begin(CProxy_AllGather AllGather_array) {
+void simBox::begin(CProxy_AllGather AllGatherGroup) {
   CkCallback cb(CkIndex_simBox::done(NULL), CkArrayIndex1D(thisIndex), thisProxy);
-  AllGather* libptr = AllGather_array(thisIndex).ckLocal();
+  AllGather* libptr = AllGatherGroup.ckLocalBranch();
   libptr->init(result, data, cb);
 }
 

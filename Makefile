@@ -27,7 +27,7 @@ build-simulation: allGather
 
 
 test-simulation: build-simulation
-	./charmrun ++local +p19 ./sim 64 29 10 10
+	./charmrun ++local +p19 ./sim 19 29 10 10
 
 
 clean:

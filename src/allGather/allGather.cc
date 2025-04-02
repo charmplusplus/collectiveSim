@@ -46,21 +46,21 @@ AllGather::AllGather(int k, int n, int type) : k(k), n(n) {
 }
 
 // will be called only for index 0
-void AllGather::initdone(int num) {
-  if (num == n) {
+void AllGather::initdone() {
+  static int num_init_done = 0;
+  num_init_done++;
+  if (num_init_done == n) {
     thisProxy.startGather();
   }
 }
 
 void AllGather::init(long int* result, long int* data, CkCallback cb) {
   this->lib_done_callback = cb;
-  zero_copy_callback = CkCallback(CkIndex_AllGather::local_buff_done(NULL), CkArrayIndex1D(thisIndex), thisProxy);
+  zero_copy_callback = CkCallback(CkIndex_AllGather::local_buff_done(NULL), thisProxy[CkMyPe()]);
   dum_dum = CkCallback(CkCallback::ignore);
   this->store = result;
   this->data = data;
-  int cnt = 1;
-  CkCallback cbinitdone(CkReductionTarget(AllGather, initdone), thisProxy(0));
-  contribute(sizeof(int), &cnt, CkReduction::sum_int, cbinitdone);
+  thisProxy[0].initdone();
 }
 
 void AllGather::local_buff_done(CkDataMsg *m) {
@@ -71,36 +71,37 @@ void AllGather::local_buff_done(CkDataMsg *m) {
 }
 
 void AllGather::startGather() {
+  int currPE = CkMyPe();
   for (int i = 0; i < k; i++) {
-    store[k * thisIndex + i] = data[i];
+    store[k * currPE + i] = data[i];
   }
   CkNcpyBuffer src(data, k*sizeof(long int), dum_dum, CK_BUFFER_UNREG);
 
   switch (type) {
   case allGatherType::ALL_GATHER_RING: {
 #ifdef TIMESTAMP
-    thisProxy[(thisIndex + 1) % n].recvRing(
-        thisIndex, src, (timeStamp + alpha + beta * k * 8));
+    thisProxy[(currPE + 1) % n].recvRing(
+        currPE, src, (timeStamp + alpha + beta * k * 8));
     timeStamp += alpha;
 #else
-    thisProxy[(thisIndex + 1) % n].recvRing(thisIndex, src, 0.0);
+    thisProxy[(currPE + 1) % n].recvRing(currPE, src, 0.0);
 #endif
   } break;
   case allGatherType::ALL_GATHER_HYPERCUBE: {
-    hyperCubeIndx.push_back(thisIndex);
+    hyperCubeIndx.push_back(currPE);
     hyperCubeStore.push_back(src);
-    thisProxy(thisIndex).Hypercube();
+    thisProxy[currPE].Hypercube();
   } break;
   case allGatherType::ALL_GATHER_FLOODING: {
-    recvFloodMsg[thisIndex] = true;
+    recvFloodMsg[currPE] = true;
     for (int i = 0; i < n; i++) {
-      if (graph[thisIndex][i] == 1) {
+      if (graph[currPE][i] == 1) {
 #ifdef TIMESTAMP
-        thisProxy(i).Flood(thisIndex, src,
+        thisProxy[i].Flood(currPE, src,
                            (timeStamp + alpha + beta * k * 8));
         timeStamp += alpha;
 #else
-        thisProxy(i).Flood(thisIndex, src, 0.0);
+        thisProxy[i].Flood(currPE, src, 0.0);
 #endif
       }
     }
@@ -114,13 +115,13 @@ void AllGather::recvRing(int sender, CkNcpyBuffer src, double recvTime) {
 #ifdef TIMESTAMP
   timeStamp = std::max(recvTime, timeStamp);
 #endif
-  if (((thisIndex + 1) % n) != sender) {
+  if (((CkMyPe() + 1) % n) != sender) {
 #ifdef TIMESTAMP
-    thisProxy[(thisIndex + 1) % n].recvRing(
+    thisProxy[(CkMyPe() + 1) % n].recvRing(
         sender, src, (timeStamp + alpha + beta * k * 8));
     timeStamp += alpha;
 #else
-    thisProxy[(thisIndex + 1) % n].recvRing(sender, src, 0.0);
+    thisProxy[(CkMyPe() + 1) % n].recvRing(sender, src, 0.0);
 #endif
   }
 }
@@ -136,12 +137,12 @@ void AllGather::Flood(int sender, CkNcpyBuffer src, double recvTime) {
   timeStamp = std::max(recvTime, timeStamp);
 #endif
   for (int i = 0; i < n; i++) {
-    if (graph[thisIndex][i] == 1 and i != sender) {
+    if (graph[CkMyPe()][i] == 1 and i != sender) {
 #ifdef TIMESTAMP
-      thisProxy(i).Flood(sender, src, (timeStamp + alpha + beta * k * 8));
+      thisProxy[i].Flood(sender, src, (timeStamp + alpha + beta * k * 8));
       timeStamp += alpha;
 #else
-      thisProxy(i).Flood(sender, src, 0.0);
+      thisProxy[i].Flood(sender, src, 0.0);
 #endif
     }
   }

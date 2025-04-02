@@ -5,22 +5,22 @@ module allGather {
 
   message allGatherMsg;
 
-  array[1D] AllGather {
+  group AllGather {
     entry AllGather(int size, int n, int type);
-    entry[reductiontarget] void initdone(int num);
+    entry void initdone();
     entry void startGather();
     entry void recvRing(int sender, CkNcpyBuffer data, double recvTime);
     entry void local_buff_done(CkDataMsg *m);
     entry void Hypercube() {
       for(iter = 0; iter < numHypercubeIter; iter++) {
-        serial { HypercubeToSend = thisIndex ^ ((int)pow(2, iter)); }
+        serial { HypercubeToSend = CkMyPe() ^ ((int)pow(2, iter)); }
         if (HypercubeToSend < n) {
           serial {
 #ifdef TIMESTAMP
-            thisProxy(HypercubeToSend).recvHypercube(iter, hyperCubeStore, hyperCubeIndx, (timeStamp + alpha + beta * hyperCubeStore.size() * 8));
+            thisProxy[HypercubeToSend].recvHypercube(iter, hyperCubeStore, hyperCubeIndx, (timeStamp + alpha + beta * hyperCubeStore.size() * 8));
             timeStamp += alpha;
 #else
-            thisProxy(HypercubeToSend).recvHypercube(iter, hyperCubeStore, hyperCubeIndx, 0.0);
+            thisProxy[HypercubeToSend].recvHypercube(iter, hyperCubeStore, hyperCubeIndx, 0.0);
 #endif
           }
           when recvHypercube[iter](int ref, std::vector<CkNcpyBuffer> data, std::vector<int> dataIndx, double recvTime) {
