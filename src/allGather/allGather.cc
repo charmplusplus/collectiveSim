@@ -71,12 +71,13 @@ void AllGather::local_buff_done(CkDataMsg *m) {
 }
 
 void AllGather::startGather() {
+  for (int i = 0; i < k; i++) {
+    store[k * thisIndex + i] = data[i];
+  }
+  CkNcpyBuffer src(data, k*sizeof(long int), dum_dum, CK_BUFFER_UNREG);
+  
   switch (type) {
   case allGatherType::ALL_GATHER_DEFAULT: {
-    for (int i = 0; i < k; i++) {
-      store[k * thisIndex + i] = data[i];
-    }
-    CkNcpyBuffer src(data, k*sizeof(long int), dum_dum, CK_BUFFER_UNREG);
 #ifdef TIMESTAMP
     thisProxy[(thisIndex + 1) % n].recvDefault(
         thisIndex, src, (timeStamp + alpha + beta * k * 8));
@@ -87,17 +88,11 @@ void AllGather::startGather() {
   } break;
   case allGatherType::ALL_GATHER_HYPERCUBE: {
     hyperCubeIndx.push_back(thisIndex);
-    for (int i = 0; i < k; i++) {
-      hyperCubeStore.push_back(data[i]);
-    }
+    hyperCubeStore.push_back(src);
     thisProxy(thisIndex).Hypercube();
   } break;
   case allGatherType::ALL_GATHER_FLOODING: {
-    for (int i = 0; i < k; i++) {
-      store[k * thisIndex + i] = data[i];
-    }
     recvFloodMsg[thisIndex] = true;
-    CkNcpyBuffer src(data, k*sizeof(long int), dum_dum, CK_BUFFER_UNREG);
     for (int i = 0; i < n; i++) {
       if (graph[thisIndex][i] == 1) {
 #ifdef TIMESTAMP

@@ -34,7 +34,7 @@ private:
   std::map<int, bool> recvFloodMsg{};
   int randCounter{};
   std::vector<int> hyperCubeIndx{};
-  std::vector<long int> hyperCubeStore{};
+  std::vector<CkNcpyBuffer> hyperCubeStore{};
   allGatherMsg *msg = new allGatherMsg;
   long int* data;
   CkCallback zero_copy_callback;
