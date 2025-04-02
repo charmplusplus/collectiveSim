@@ -12,10 +12,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    
+
+    - name: Install CMake
+      uses: ssrobins/install-cmake@v1
+      with:
+        version: 3.24.3
+
     - name: build charmc
       run: |
-        sudo apt install gcc g++
         wget https://charm.cs.illinois.edu/distrib/charm-latest.tar.gz
         tar xzf charm-latest.tar.gz
         cd charm-v7.0.0
