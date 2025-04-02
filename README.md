@@ -28,23 +28,12 @@ enum allGatherType {
 
 ##### [NOTE]: `ALL_GATHER_HYPERCUBE` only works when n(size of chare array) is a power of 2.
 
-You must also declare a callback to a function which the library can return to after its done and it must only take a pointer to `allGatherMsg` as its argument. To start operations, each chare array element must call startGather:
+You must also declare a callback to a function which the library can return to after its done and it must only take a pointer to `allGatherMsg` as its argument. To start operations, each chare array element must make a local pointer to the library chare array element bound to it and call init.
 
 ```C++
-AllGather_array({{CHARE_ARRAY_INDEX}}).startGather(data, k, cb);
-void done(allGatherMsg *msg);
+AllGather* libptr = AllGather_array({{CHARE_ARRAY_INDEX}}).ckLocal();
+libptr->init(result, data, cb);
 ```
+Here, result is a pointer to where the user wants the result of allGather operation to be stored(note that it must be of size n * k), data refers to per chare array element contributed data and cb refers to the callback.
 
-Here data refers to per chare array element data and cb refers to the callback. 
-
-Once the library is done, it will call the callback function and give it the gathered data as an allGatherMsg. To extract data from it, simply call get_data and the data will always have a size of `n X k`. The structure of `allGatherMsg` is:
-
-```C++
-class allGatherMsg : public CMessage_allGatherMsg {
-private:
-  long int *data;
-public:
-  long int *get_data();
-  allGatherMsg(long int *d);
-};
-```
+Once the library is done, it will send an empty message (a kick if you will) telling the user that the result is now available in the destination that the user specified earlier.
