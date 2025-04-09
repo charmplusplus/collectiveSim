@@ -3,7 +3,7 @@ mainmodule user {
 
   mainchare start {
     entry start(CkArgMsg * m);
-    entry[reductiontarget] void fini(double time);
+    entry[reductiontarget] void fini(int numDone);
   };
 
   array[1D] simBox {
