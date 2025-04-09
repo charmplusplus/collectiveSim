@@ -1,37 +1,31 @@
 CHARMC ?= charmc
 FLAGS = -g -Wall -O2
 TYPE ?= RING
-ALLGATHER_DIR=./src/allGather
-EXAMPLE_DIR=./example
+MESSAGE_DIR=./message
+ZEROCOPY_DIR=./zerocopy
 
 
-allGather:
-	$(CHARMC) $(ALLGATHER_DIR)/allGather.ci
-	@mv allGather.decl.h $(ALLGATHER_DIR)/allGather.decl.h
-	@mv allGather.def.h $(ALLGATHER_DIR)/allGather.def.h
-	$(CHARMC) -c $(ALLGATHER_DIR)/allGather.cc
-	@echo "Built allGather Library"
+message:
+	$(CHARMC) $(MESSAGE_DIR)/message.ci
+	@mv message_sim.decl.h $(MESSAGE_DIR)/message_sim.decl.h
+	@mv message_sim.def.h $(MESSAGE_DIR)/message_sim.def.h
+	$(CHARMC) -o message_sim $(MESSAGE_DIR)/message.cc
+	@echo "Built ping-pong using message passing"
+	./charmrun +p20 ./message_sim
 
 
-collectiveSim: allGather
-
-
-build-simulation: allGather
-	$(CHARMC) $(EXAMPLE_DIR)/user.ci
-	@mv user.decl.h $(EXAMPLE_DIR)/user.decl.h
-	@mv user.def.h $(EXAMPLE_DIR)/user.def.h
-	$(CHARMC) -D$(TYPE) -I$(ALLGATHER_DIR) $(EXAMPLE_DIR)/user.cc
-	$(CHARMC) -o sim user.o allGather.o
-	@rm -f user.o allGather.o
-	@echo "Built simulation"
-
-
-test-simulation: build-simulation
-	./charmrun ++local +p19 ./sim 64 29 10 10
+zerocopy:
+	$(CHARMC) $(ZEROCOPY_DIR)/zerocopy.ci
+	@mv zerocopy_sim.decl.h $(ZEROCOPY_DIR)/zerocopy_sim.decl.h
+	@mv zerocopy_sim.def.h $(ZEROCOPY_DIR)/zerocopy_sim.def.h
+	$(CHARMC) -o zerocopy_sim $(ZEROCOPY_DIR)/zerocopy.cc
+	@echo "Built ping-pong using zerocopy"
+	./charmrun +p20 ./zerocopy_sim
 
 
 clean:
-	rm -f *.decl.h *.def.h *.o charmrun sim
+	rm -f *.decl.h *.def.h *.o charmrun message_sim zerocopy_sim
 
 
-.phony : allGather build-simulation run-simulation clean
+.PHONY : message zerocopy clean
+

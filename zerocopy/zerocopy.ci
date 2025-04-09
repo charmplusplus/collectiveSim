@@ -1,0 +1,12 @@
+mainmodule zerocopy_sim {
+    mainchare start {
+        entry start(CkArgMsg* m);
+        entry void done();
+    };
+
+    array[1D] sim {
+        entry sim(CProxy_start s);
+        entry void ping_pong(CkNcpyBuffer data);
+        entry void local_done(CkDataMsg *m);
+    }
+}
