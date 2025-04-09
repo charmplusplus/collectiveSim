@@ -14,7 +14,7 @@ private:
 public:
   start(CkArgMsg *msg);
 
-  void fini(int numDone);
+  void fini(double time);
 };
 
 class simBox : public CBase_simBox {
@@ -26,6 +26,8 @@ private:
   int y;
   long int *data;
   long int *result;
+  double startTime;
+  double endTime;
 
 public:
   simBox(CProxy_start startProxy, int k, int n, int x, int y);

@@ -32,11 +32,9 @@ start::start(CkArgMsg *msg) {
   sim.begin(AllGather);
 }
 
-void start::fini(int numDone) {
-  if (numDone == n) {
-    ckout << "[STATUS] Completed the AllGather Simulation" << endl;
+void start::fini(double time) {
+    ckout<<"[STATUS] Time taken for AllGather: " << time/n << endl;
     CkExit();
-  }
 }
 
 simBox::simBox(CProxy_start startProxy, int k, int n, int x, int y)
@@ -57,11 +55,13 @@ simBox::simBox(CProxy_start startProxy, int k, int n, int x, int y)
 void simBox::begin(CProxy_AllGather AllGatherGroup) {
   CkCallback cb(CkIndex_simBox::done(NULL), CkArrayIndex1D(thisIndex), thisProxy);
   AllGather* libptr = AllGatherGroup.ckLocalBranch();
+  startTime = CkTimer();
   libptr->init(result, data, cb);
 }
 
 void simBox::done(allGatherMsg *msg) {
   bool success = true;
+  endTime = CkTimer();
   for(int i = 0; i < n; i++) {
     long int max_serial = (1 << y) - 1;
     long int base = i;
@@ -87,8 +87,9 @@ void simBox::done(allGatherMsg *msg) {
     ckout << endl;
   }
   int cnt = 1;
+  double time = endTime - startTime;
   CkCallback cbfini(CkReductionTarget(start, fini), startProxy);
-  contribute(sizeof(int), &cnt, CkReduction::sum_int, cbfini);
+  contribute(sizeof(double), &time, CkReduction::sum_double, cbfini);
 }
 
 #include "user.def.h"
