@@ -8,15 +8,13 @@ start::start(CkArgMsg *msg) {
           << endl;
     CkExit();
   }
-  if(init_done){
-    sim.begin(AllGather);
-  }
 
   n = atoi(msg->argv[1]);
   k = atoi(msg->argv[2]);
   x = atoi(msg->argv[3]);
   y = atoi(msg->argv[4]);
   delete msg;
+
   sim = CProxy_simBox::ckNew(thisProxy, k, n, x, y, n);
 
 #ifdef FLOODING
@@ -30,18 +28,13 @@ start::start(CkArgMsg *msg) {
 #ifdef RING
   AllGather = CProxy_AllGather::ckNew(k, n, (int)allGatherType::ALL_GATHER_RING);
 #endif
-  init_done = true;
+
   sim.begin(AllGather);
 }
 
 void start::fini(double time) {
-  avgTime += time;
-  if(num_iter == 5){
-    avgTime /= 5;
-    ckout << "[STATUS] Average time for Chare is " << avgTime << endl;
-        CkExit();
-    }
-    num_iter++;
+    ckout<<"[STATUS] AllGather Time: " << time/5 << " seconds" << endl;
+    CkExit();
 }
 
 simBox::simBox(CProxy_start startProxy, int k, int n, int x, int y)
