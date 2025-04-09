@@ -28,6 +28,7 @@ private:
   CkCallback lib_done_callback;
   allGatherType type;
   int numHypercubeIter{};
+  bool HypercubeRecursiveDoubling{};
   int iter;
   int HypercubeToSend;
   std::vector<std::vector<int>> graph{};
