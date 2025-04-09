@@ -14,24 +14,30 @@ module allGather {
     entry void Hypercube() {
       for(iter = 0; iter < numHypercubeIter; iter++) {
         serial { 
-          if(!HypercubeRecursiveDoubling){
-            HypercubeToSend = CkMyPe() ^ ((int)pow(2, iter)); 
-          } else {
+          if(HypercubeRecursiveDoubling){
             HypercubeToSend = (n + CkMyPe() - (int)pow(2, iter))%n;
+          } else {
+            HypercubeToSend = CkMyPe() ^ ((int)pow(2, iter)); 
           }
           
           }
           serial {
 #ifdef TIMESTAMP
-           // thisProxy[HypercubeToSend].recvHypercube(iter, hyperCubeStore, hyperCubeIndx, (timeStamp + alpha + beta * hyperCubeStore.size() * 8));
-            //timeStamp += alpha;
+            if(HypercubeRecursiveDoubling && iter == numHypercubeIter-1){
+              std::vector<CkNcpyBuffer> hyperCubeStoreCopy(hyperCubeStore.begin(), hyperCubeStore.begin()+(n-(int)pow(2,iter)));
+              std::vector<int> hyperCubeIndxCopy(hyperCubeIndx.begin(), hyperCubeIndx.begin()+(n-(int)pow(2,iter)));
+              thisProxy[HypercubeToSend].recvHypercube(iter, hyperCubeStoreCopy, hyperCubeIndxCopy,  (timeStamp + alpha + beta * hyperCubeStore.size() * 8));
+            } else {
+            thisProxy[HypercubeToSend].recvHypercube(iter, hyperCubeStore, hyperCubeIndx,  (timeStamp + alpha + beta * hyperCubeStore.size() * 8));
+            }
+            timeStamp += alpha;
 #else
             
             if(HypercubeRecursiveDoubling && iter == numHypercubeIter-1){
               std::vector<CkNcpyBuffer> hyperCubeStoreCopy(hyperCubeStore.begin(), hyperCubeStore.begin()+(n-(int)pow(2,iter)));
               std::vector<int> hyperCubeIndxCopy(hyperCubeIndx.begin(), hyperCubeIndx.begin()+(n-(int)pow(2,iter)));
               thisProxy[HypercubeToSend].recvHypercube(iter, hyperCubeStoreCopy, hyperCubeIndxCopy, 0.0);
-            } else{
+            } else {
             thisProxy[HypercubeToSend].recvHypercube(iter, hyperCubeStore, hyperCubeIndx, 0.0);
             }
 #endif
@@ -45,7 +51,7 @@ module allGather {
                 dst.get(data[m]);
               }
 #ifdef TIMESTAMP
-             // timeStamp = std::max(recvTime, timeStamp);
+            timeStamp = std::max(recvTime, timeStamp);
 #endif
             }
           }
