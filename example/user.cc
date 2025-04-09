@@ -33,7 +33,7 @@ start::start(CkArgMsg *msg) {
 }
 
 void start::fini(double time) {
-    ckout<<"[STATUS] AllGather Time: " << time/5 << " seconds" << endl;
+    ckout<<"[STATUS] AllGather Time: " << time/n << " seconds" << endl;
     CkExit();
 }
 
