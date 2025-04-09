@@ -10,6 +10,9 @@ private:
   int y;
   CProxy_simBox sim;
   CProxy_AllGather AllGather;
+  bool init_done = false;
+  int num_iter = 0;
+  double avgTime = 0.0;
 
 public:
   start(CkArgMsg *msg);
