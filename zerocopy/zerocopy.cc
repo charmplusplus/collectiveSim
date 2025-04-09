@@ -1,8 +1,7 @@
 #include "zerocopy_sim.decl.h"
 
 #define NUM_SIM 100000
-// size = 1MB
-#define MSG_SIZE 250000
+int MSG_SIZE{};
 
 class start : public CBase_start {
 private:
@@ -10,6 +9,7 @@ private:
     double start_time;
 public:
     start(CkArgMsg *m) {
+        MSG_SIZE = atoi(m->argv[1]);
         CProxy_sim simArray = CProxy_sim::ckNew(thisProxy, 2);
         start_time = CkWallTimer();
     }

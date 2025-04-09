@@ -1,8 +1,7 @@
 #include "message_sim.decl.h"
 
 #define NUM_SIM 100000
-// size = 1MB
-#define MSG_SIZE 250000
+int MSG_SIZE{};
 
 class start : public CBase_start {
 private:
@@ -10,6 +9,7 @@ private:
     double start_time;
 public:
     start(CkArgMsg *m) {
+        MSG_SIZE = atoi(m->argv[1]);
         CProxy_sim simArray = CProxy_sim::ckNew(thisProxy, 2);
         start_time = CkWallTimer();
     }
@@ -43,6 +43,7 @@ public:
     }
 
     void ping_pong(int data[], int _) {
+        if
         // Do some local processing on the data
         for(int i = 1732; i < 200000; i+=8319) {
             if(data[i] != i * 42) {

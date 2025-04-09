@@ -11,7 +11,6 @@ message:
 	@mv message_sim.def.h $(MESSAGE_DIR)/message_sim.def.h
 	$(CHARMC) -o message_sim $(MESSAGE_DIR)/message.cc
 	@echo "Built ping-pong using message passing"
-	./charmrun +p20 ./message_sim
 
 
 zerocopy:
@@ -20,7 +19,6 @@ zerocopy:
 	@mv zerocopy_sim.def.h $(ZEROCOPY_DIR)/zerocopy_sim.def.h
 	$(CHARMC) -o zerocopy_sim $(ZEROCOPY_DIR)/zerocopy.cc
 	@echo "Built ping-pong using zerocopy"
-	./charmrun +p20 ./zerocopy_sim
 
 
 clean:
