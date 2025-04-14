@@ -2,10 +2,25 @@
 
 A simple test to see when (under what scale of parameters) does zero copy become better than message passing. 
 
+# Build and Run
+```
+make CHARMC=/path/to/charmc zerocopy
+make CHARMC=/path/to/charmc message
+```
+This gives two executables `message_sim` and `zerocopy_sim`
+
+The `run.sh` script will run all the ping pong program for all the data sizes. The runs will do two iterations of warmup and 3 actual iterations. On two seperate allocations run `./run.sh ./zerocopy_sim` and `./run.sh ./message_sim`
+
+
 # Results
 
 
 ## Ping-Pong between 2 PEs on the same node
+Allocate using 
+```
+salloc --partition=cpu-interactive --nodes=1 --ntasks-per-node=2 --cpus-per-task=1 --account=mzu-delta-cpu --time=00:30:00
+```
+and then run using the commands mentioned.
 
 
 ### MESSAGE PASSING
@@ -42,6 +57,11 @@ A simple test to see when (under what scale of parameters) does zero copy become
 
 
 ## Ping-Pong between 2 PEs on different nodes
+Allocate using 
+```
+salloc --partition=cpu-interactive --nodes=2 --ntasks-per-node=1 --cpus-per-task=1 --account=mzu-delta-cpu --time=00:30:00
+```
+and then run using the commands mentioned.
 
 
 ### MESSAGE PASSING
