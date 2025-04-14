@@ -9,6 +9,12 @@ for bytes in 1024 2048 4096 8192 16384 32768 65536 131072 262144 524288 1048576;
     data_value=$(( bytes / 4 ))
     sum=0
 
+    # warp-up runs
+    for run in {1..2}; do
+        output=$(./charmrun +p2 ./$1 "$data_value")
+    done
+
+    # Benchmark runs
     for run in {1..3}; do
         output=$(./charmrun +p2 ./$1 "$data_value")
         time=$(echo "$output" | grep "Time Taken:" | awk '{print $3}')
