@@ -26,8 +26,8 @@ AllGather::AllGather(int k, int n, int type) : k(k), n(n) {
     // Create a connected graph
     // Ring
     for (int i = 0; i < n; i++) {
-      graph[i][(i + 1) % n] = 1;
-      graph[i][(i - 1) % n] = 1;
+      graph[i][(n + i + 1) % n] = 1;
+      graph[i][(n + i - 1) % n] = 1;
     }
     // Random [n/2] connections
     for (int i = 0; i < 6; i++) {
