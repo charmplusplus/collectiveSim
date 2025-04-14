@@ -4,9 +4,30 @@ A simple test to see when (under what scale of parameters) does zero copy become
 
 # Results
 
-| Data  | Ping-Pongs | Message     | Zerocopy    |
-|-------|------------|-------------|-------------|
-| 1 MB  | 100,000    | 39.990689s  | 24.259897s  |
-| 1 MB  | 100,000    | 42.704204s  | 20.390878s  |
-| 1 MB  | 100,000    | 32.231863s  | 10.949946s  |
-| 1 MB  | 100,000    | 43.944832s  | 20.854975s  |
+## Ping-Pong between 2 PEs on the same node
+
+| Data    | Ping-Pongs |               Message                   |              Zerocopy                   |
+|---------|------------|-----------------------------------------|-----------------------------------------|
+|         |            | Trial1      | Trial 2     | Trial 3     | Trial 1     | Trial 2     | Trial 3     |
+| 1 KB    | 100,000    |             |             |             |             |             |             |
+| 100 KB  | 100,000    |             |             |             |             |             |             |
+| 200 KB  | 100,000    |             |             |             |             |             |             |
+| 400 KB  | 100,000    |             |             |             |             |             |             |
+| 600 KB  | 100,000    |             |             |             |             |             |             |
+| 800 KB  | 100,000    |             |             |             |             |             |             |
+| 1 MB    | 100,000    |             |             |             |             |             |             |
+
+
+
+## Ping-Pong between 2 PEs on different nodes
+
+| Data    | Ping-Pongs |               Message                   |              Zerocopy                   |
+|---------|------------|-----------------------------------------|-----------------------------------------|
+|         |            | Trial1      | Trial 2     | Trial 3     | Trial 1     | Trial 2     | Trial 3     |
+| 1 KB    | 100,000    |             |             |             |             |             |             |
+| 100 KB  | 100,000    |             |             |             |             |             |             |
+| 200 KB  | 100,000    |             |             |             |             |             |             |
+| 400 KB  | 100,000    |             |             |             |             |             |             |
+| 600 KB  | 100,000    |             |             |             |             |             |             |
+| 800 KB  | 100,000    |             |             |             |             |             |             |
+| 1 MB    | 100,000    |             |             |             |             |             |             |

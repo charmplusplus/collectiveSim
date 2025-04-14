@@ -43,14 +43,11 @@ public:
     }
 
     void ping_pong(int data[], int _) {
-        if
-        // Do some local processing on the data
-        for(int i = 1732; i < 200000; i+=8319) {
-            if(data[i] != i * 42) {
-                ckout << "Data is incorrect" << endl;
-                CkExit();
-            }
+        // sanity check
+        if(data[MSG_SIZE - 42] != (MSG_SIZE - 42) * 42) {
+            CkAbort("[ERROR] Data integrity check failed");
         }
+
         thisProxy[(thisIndex + 1) % 2].ping_pong(data, MSG_SIZE);
         cnt++;
         if(cnt == NUM_SIM) {
