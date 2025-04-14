@@ -23,12 +23,12 @@ module allGather {
           }
           serial {
 #ifdef TIMESTAMP
-            if(HypercubeRecursiveDoubling && iter == numHypercubeIter-1){
+            if(HypercubeRecursiveDoubling && iter == numHypercubeIter-1) {
               std::vector<CkNcpyBuffer> hyperCubeStoreCopy(hyperCubeStore.begin(), hyperCubeStore.begin()+(n-(int)pow(2,iter)));
               std::vector<int> hyperCubeIndxCopy(hyperCubeIndx.begin(), hyperCubeIndx.begin()+(n-(int)pow(2,iter)));
               thisProxy[HypercubeToSend].recvHypercube(iter, hyperCubeStoreCopy, hyperCubeIndxCopy,  (timeStamp + alpha + beta * hyperCubeStore.size() * 8));
             } else {
-            thisProxy[HypercubeToSend].recvHypercube(iter, hyperCubeStore, hyperCubeIndx,  (timeStamp + alpha + beta * hyperCubeStore.size() * 8));
+              thisProxy[HypercubeToSend].recvHypercube(iter, hyperCubeStore, hyperCubeIndx,  (timeStamp + alpha + beta * hyperCubeStore.size() * 8));
             }
             timeStamp += alpha;
 #else
@@ -38,7 +38,7 @@ module allGather {
               std::vector<int> hyperCubeIndxCopy(hyperCubeIndx.begin(), hyperCubeIndx.begin()+(n-(int)pow(2,iter)));
               thisProxy[HypercubeToSend].recvHypercube(iter, hyperCubeStoreCopy, hyperCubeIndxCopy, 0.0);
             } else {
-            thisProxy[HypercubeToSend].recvHypercube(iter, hyperCubeStore, hyperCubeIndx, 0.0);
+              thisProxy[HypercubeToSend].recvHypercube(iter, hyperCubeStore, hyperCubeIndx, 0.0);
             }
 #endif
           }

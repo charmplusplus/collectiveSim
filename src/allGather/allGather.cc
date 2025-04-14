@@ -30,7 +30,7 @@ AllGather::AllGather(int k, int n, int type) : k(k), n(n) {
       graph[i][(i - 1) % n] = 1;
     }
     // Random [n/2] connections
-    for (int i = 0; i < (int)(n / 2); i++) {
+    for (int i = 0; i < 6; i++) {
       int x = gen_rand();
       int y = gen_rand();
       if (x != y) {
@@ -53,6 +53,7 @@ void AllGather::initdone() {
   }
 }
 
+// TODO: remove this broadcast
 void AllGather::init(long int* result, long int* data, CkCallback cb) {
   this->lib_done_callback = cb;
   zero_copy_callback = CkCallback(CkIndex_AllGather::local_buff_done(NULL), thisProxy[CkMyPe()]);
