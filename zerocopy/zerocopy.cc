@@ -1,16 +1,15 @@
 #include "zerocopy_sim.decl.h"
 
 #define NUM_SIM 100000
-int MSG_SIZE{};
 
 class start : public CBase_start {
 private:
-    int doneCount;
+    int doneCount{};
     double start_time;
 public:
     start(CkArgMsg *m) {
-        MSG_SIZE = atoi(m->argv[1]);
-        CProxy_sim simArray = CProxy_sim::ckNew(thisProxy, 2);
+        int MSG_SIZE = atoi(m->argv[1]);
+        CProxy_sim simArray = CProxy_sim::ckNew(thisProxy, MSG_SIZE, 2);
         start_time = CkWallTimer();
     }
 
@@ -28,15 +27,17 @@ public:
 class sim : public CBase_sim {
 private:
     CProxy_start startProxy;
-    int cnt = 0;
+    int cnt{};
     CkCallback zero_copy_callback;
     CkCallback dum_dum;
-    int recvData[MSG_SIZE];
+    int* recvData{};
+    int MSG_SIZE{};
 public:
-    sim(CProxy_start _startProxy) : startProxy(_startProxy) {
+    sim(CProxy_start _startProxy, int msgSize) : startProxy(_startProxy), MSG_SIZE(msgSize) {
         // SETUP
         zero_copy_callback = CkCallback(CkIndex_sim::local_done(NULL), thisProxy[thisIndex]);
         dum_dum = CkCallback(CkCallback::ignore);
+        recvData = (int*)malloc(MSG_SIZE * sizeof(int));
 
         // START
         if(thisIndex == 0) {

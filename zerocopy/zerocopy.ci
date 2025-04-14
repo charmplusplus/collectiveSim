@@ -5,7 +5,7 @@ mainmodule zerocopy_sim {
     };
 
     array[1D] sim {
-        entry sim(CProxy_start s);
+        entry sim(CProxy_start s, int msgSize);
         entry void ping_pong(CkNcpyBuffer data);
         entry void local_done(CkDataMsg *m);
     }
