@@ -37,7 +37,7 @@ and then run using the commands mentioned.
 | 128  KB | 100000     | 10           | 7.690687         |
 | 256  KB | 100000     | 10           | 11.966872        |
 | 512  KB | 100000     | 10           | 13.548826        |
-| 1024 KB | 100000     | 3            | 35.845900        |
+| 1024 KB | 100000     | 10           | 35.845900        |
 
 ### ZERO COPY
 
@@ -80,6 +80,8 @@ and then run using the commands mentioned.
 | 64 KB   | 100000     | 10           | 5.389932         |
 | 128 KB  | 100000     | 10           | 7.392645         |
 | 256 KB  | 100000     | 10           | 12.175158        |
+| 512 KB  | 100000     | <BLOCKS>     | <BLOCKS>         |
+| 1024 KB | 100000     | <BLOCKS>     | <BLOCKS>         |
 
 ### ZERO COPY
 
