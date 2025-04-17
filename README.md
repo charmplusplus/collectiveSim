@@ -56,7 +56,7 @@ and then run using the commands mentioned.
 | 1024 KB | 100000     | 10           | 16.331971        |
 
 
-<image src="plots/message_vs_zero_one.png" alt="Message Vs ZeroCopy on single Node">
+<image src="plots/time_per_ping_same_node.png" alt="Message Vs ZeroCopy on single Node">
 
 
 ## Ping-Pong between 2 PEs on different nodes
@@ -100,4 +100,4 @@ and then run using the commands mentioned.
 | 1024 KB | 100000     | 10           | 11.001834        |
 
 
-<image src="plots/message_vs_zero_two.png" alt="Message Vs ZeroCopy on two Nodes">
+<image src="plots/time_per_ping_diff_node.png" alt="Message Vs ZeroCopy on two Nodes">
