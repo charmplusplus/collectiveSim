@@ -34,7 +34,7 @@ module allGather {
               for(int m = 0; m < data.size(); m++) {
                 hyperCubeStore.emplace_back(data[m]);
                 hyperCubeIndx.emplace_back(dataIndx[m]);
-                CkNcpyBuffer dst(store + dispArray[dataIndx[m]], dispArray[dataIndx[m]+1] - dispArray[dataIndx[m]], zero_copy_callback, CK_BUFFER_UNREG);
+                CkNcpyBuffer dst(store + dispArray[dataIndx[m]], (dispArray[dataIndx[m]+1] - dispArray[dataIndx[m]])*sizeof(long int), zero_copy_callback, CK_BUFFER_UNREG);
                 dst.get(data[m]);
               }
             }
