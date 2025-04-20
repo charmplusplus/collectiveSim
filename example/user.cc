@@ -18,15 +18,18 @@ start::start(CkArgMsg *msg) {
   sim = CProxy_simBox::ckNew(thisProxy, k, n, x, y, n);
 
 #ifdef FLOODING
-  AllGather = CProxy_AllGather::ckNew(k, n, (int)allGatherType::ALL_GATHER_FLOODING);
+  AllGather =
+      CProxy_AllGather::ckNew(k, n, (int)allGatherType::ALL_GATHER_FLOODING);
 #endif
 
 #ifdef HYPERCUBE
-  AllGather = CProxy_AllGather::ckNew(k, n, (int)allGatherType::ALL_GATHER_HYPERCUBE);
+  AllGather =
+      CProxy_AllGather::ckNew(k, n, (int)allGatherType::ALL_GATHER_HYPERCUBE);
 #endif
 
 #ifdef RING
-  AllGather = CProxy_AllGather::ckNew(k, n, (int)allGatherType::ALL_GATHER_RING);
+  AllGather =
+      CProxy_AllGather::ckNew(k, n, (int)allGatherType::ALL_GATHER_RING);
 #endif
 
   sim.begin(AllGather);
@@ -55,33 +58,36 @@ simBox::simBox(CProxy_start startProxy, int k, int n, int x, int y)
 }
 
 void simBox::begin(CProxy_AllGather AllGatherGroup) {
-  CkCallback cb(CkIndex_simBox::done(NULL), CkArrayIndex1D(thisIndex), thisProxy);
-  AllGather* libptr = AllGatherGroup.ckLocalBranch();
+  CkCallback cb(CkIndex_simBox::done(NULL), CkArrayIndex1D(thisIndex),
+                thisProxy);
+  AllGather *libptr = AllGatherGroup.ckLocalBranch();
   libptr->init(result, data, thisIndex, cb);
 }
 
 void simBox::done(allGatherMsg *msg) {
   bool success = true;
-  for(int i = 0; i < n; i++) {
+  for (int i = 0; i < n; i++) {
     long int max_serial = (1 << y) - 1;
     long int base = i;
     while (max_serial > 0) {
       base = base * 10;
       max_serial = max_serial / 10;
     }
-    for(int j = 0; j < k; j++) {
-      if(result[i * k + j] != base + j) {
+    for (int j = 0; j < k; j++) {
+      if (result[i * k + j] != base + j) {
         success = false;
         break;
       }
     }
-    if(!success) break;
+    if (!success)
+      break;
   }
 
-  if(success) ckout << "[STATUS] Correct result for Chare " << thisIndex << endl;
+  if (success)
+    ckout << "[STATUS] Correct result for Chare " << thisIndex << endl;
   else {
     ckout << "[STATUS] Incorrect result for Chare " << thisIndex << endl;
-    for(int i = 0; i < n * k; i++) {
+    for (int i = 0; i < n * k; i++) {
       ckout << result[i] << " ";
     }
     ckout << endl;

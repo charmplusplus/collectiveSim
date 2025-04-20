@@ -5,13 +5,14 @@
 #include <cstdlib>
 #include <cstring>
 #include <map>
+#include <random>
 #include <utility>
 #include <vector>
-#include <random>
 
 class allGatherMsg : public CMessage_allGatherMsg {};
 
-// NB: ALL_GATHER_HYPERCUBE only works when the size of chare array is a power of 2.
+// NB: ALL_GATHER_HYPERCUBE only works when the size of chare array is a power
+// of 2.
 enum allGatherType {
   ALL_GATHER_RING,
   ALL_GATHER_HYPERCUBE,
@@ -37,7 +38,7 @@ private:
   std::vector<int> hyperCubeIndx{};
   std::vector<CkNcpyBuffer> hyperCubeStore{};
   allGatherMsg *msg = new allGatherMsg;
-  long int* data;
+  long int *data;
   CkCallback zero_copy_callback;
   CkCallback dum_dum;
 
@@ -56,7 +57,7 @@ public:
 
   void Flood(int sender, CkNcpyBuffer data);
 
-  void init(long int* result, long int* data, int idx, CkCallback cb);
+  void init(long int *result, long int *data, int idx, CkCallback cb);
 
   void initdone();
 };
