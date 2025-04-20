@@ -9,7 +9,7 @@ private:
   int x;
   int y;
   CProxy_simBox sim;
-  int numSizeGathered;
+  int numSizeGathered{};
   long int* sizeArray;
 
 public:
