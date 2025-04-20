@@ -37,6 +37,6 @@ Here, result is a pointer to where the user wants the result of allGather operat
 Once the library is done, it will send an empty message (a kick if you will) telling the user that the result is now available in the destination that the user specified earlier.
 
 ### Notes
-- Currently only gathering same sized data is supported.
+- Currently only gathering equal sized data is supported.
 - The number of PEs needs to be the same as `n`. Please refer to the makefile for a concrete command.
 - The program still has an unresolved bug, where very rarely(2 in a 100 runs), the program reports a segfault after all the data has been correctly gathered.
