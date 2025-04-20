@@ -10,26 +10,25 @@ start::start(CkArgMsg *msg) {
   }
 
   n = atoi(msg->argv[1]);
-  k = atoi(msg->argv[2]);
+  k = atoi(msg->argv[2]);// TODO: remove this
   x = atoi(msg->argv[3]);
   y = atoi(msg->argv[4]);
+  sizeArray = (long int *)malloc((n + 1) * sizeof(long int));
   delete msg;
 
-  sim = CProxy_simBox::ckNew(thisProxy, k, n, x, y, n);
+  #ifdef FLOODING
+   CProxy_AllGather allGatherProxy = CProxy_AllGather::ckNew(n, (int)allGatherType::ALL_GATHER_FLOODING);
+  #endif
+  
+  #ifdef HYPERCUBE
+   CProxy_AllGather allGatherProxy = CProxy_AllGather::ckNew(n, (int)allGatherType::ALL_GATHER_HYPERCUBE);
+  #endif
+  
+  #ifdef RING
+  CProxy_AllGather allGatherProxy = CProxy_AllGather::ckNew(n, (int)allGatherType::ALL_GATHER_RING);
+  #endif
 
-#ifdef FLOODING
-  AllGather = CProxy_AllGather::ckNew(k, n, (int)allGatherType::ALL_GATHER_FLOODING);
-#endif
-
-#ifdef HYPERCUBE
-  AllGather = CProxy_AllGather::ckNew(k, n, (int)allGatherType::ALL_GATHER_HYPERCUBE);
-#endif
-
-#ifdef RING
-  AllGather = CProxy_AllGather::ckNew(k, n, (int)allGatherType::ALL_GATHER_RING);
-#endif
-
-  sim.begin(AllGather);
+  sim = CProxy_simBox::ckNew(thisProxy, allGatherProxy, n, x, y, n);
 }
 
 void start::fini(int numDone) {
@@ -38,26 +37,45 @@ void start::fini(int numDone) {
     CkExit();
   }
 }
+void start::gatherSize(int arrayIndex, int dataSize) {
+  sizeArray[arrayIndex] = dataSize;
+  numSizeGathered++;
+  if(numSizeGathered==n){
+    long int* dispArray = (long int *)malloc((n + 1) * sizeof(long int));
+    // do a prefix sum
+    dispArray[0] = 0;
+    for (int i = 1; i < n + 1; i++) {
+      dispArray[i] = dispArray[i - 1] + sizeArray[i - 1];
+    }
+    // send the displacement arrays to begin
+    sim.begin(dispArray, n+1);
+    
+  }
+}
 
-simBox::simBox(CProxy_start startProxy, int k, int n, int x, int y)
-    : startProxy(startProxy), k(k), n(n), x(x), y(y) {
-  result = (long int *)malloc(k * n * sizeof(long int));
-  data = (long int *)malloc(k * sizeof(long int));
+simBox::simBox(CProxy_start startProxy, CProxy_AllGather allGatherProxy, int n, int x, int y)
+    : startProxy(startProxy), allGatherProxy(allGatherProxy), n(n), x(x), y(y) {
+  srand(thisIndex);
+  dataSize = random()%100+1; 
+  data = (long int *)malloc(dataSize*sizeof(long int));
   long int max_serial = (1 << y) - 1;
   long int base = thisIndex;
   while (max_serial > 0) {
     base = base * 10;
     max_serial = max_serial / 10;
   }
-  for (int i = 0; i < k; i++) {
+  for (int i = 0; i < dataSize; i++) {
     data[i] = base + i;
   }
+  startProxy.gatherSize(thisIndex, dataSize);
 }
 
-void simBox::begin(CProxy_AllGather AllGatherGroup) {
+void simBox::begin(long* dispArray, int _) {
+  this->dispArray = dispArray;
+  result = (long int *)malloc(dispArray[n]*sizeof(long int));
   CkCallback cb(CkIndex_simBox::done(NULL), CkArrayIndex1D(thisIndex), thisProxy);
-  AllGather* libptr = AllGatherGroup.ckLocalBranch();
-  libptr->init(result, data, thisIndex, cb);
+  AllGather* libptr = allGatherProxy.ckLocalBranch();
+  libptr->init(result, data, dispArray, thisIndex, cb);
 }
 
 void simBox::done(allGatherMsg *msg) {
@@ -69,8 +87,10 @@ void simBox::done(allGatherMsg *msg) {
       base = base * 10;
       max_serial = max_serial / 10;
     }
-    for(int j = 0; j < k; j++) {
-      if(result[i * k + j] != base + j) {
+    long int dataSize = dispArray[i+1] - dispArray[i];
+    int offset = dispArray[i];
+    for(int j = 0; j < dataSize; j++) {
+      if(result[offset + j] != base + j) {
         success = false;
         break;
       }
@@ -81,7 +101,7 @@ void simBox::done(allGatherMsg *msg) {
   if(success) ckout << "[STATUS] Correct result for Chare " << thisIndex << endl;
   else {
     ckout << "[STATUS] Incorrect result for Chare " << thisIndex << endl;
-    for(int i = 0; i < n * k; i++) {
+    for(int i = 0; i < dispArray[thisIndex+1] - dispArray[thisIndex]; i++) {
       ckout << result[i] << " ";
     }
     ckout << endl;

@@ -9,7 +9,7 @@ int AllGather::gen_rand() {
   return dis(gen);
 }
 
-AllGather::AllGather(int k, int n, int type) : k(k), n(n) {
+AllGather::AllGather(int n, int type) : n(n) {
   this->type = (allGatherType)type;
   switch (type) {
   case allGatherType::ALL_GATHER_HYPERCUBE: {
@@ -54,8 +54,9 @@ void AllGather::initdone() {
 }
 
 // TODO: remove this broadcast
-void AllGather::init(long int* result, long int* data,int idx, CkCallback cb) {
+void AllGather::init(long int* result, long int* data, long int* dispArray, int idx, CkCallback cb) {
   this->lib_done_callback = cb;
+  this->dispArray = dispArray;
   this->idx = idx;
   zero_copy_callback = CkCallback(CkIndex_AllGather::local_buff_done(NULL), thisProxy[CkMyPe()]);
   dum_dum = CkCallback(CkCallback::ignore);
@@ -72,11 +73,12 @@ void AllGather::local_buff_done(CkDataMsg *m) {
 }
 
 void AllGather::startGather() {
-  for (int i = 0; i < k; i++) {
-    store[k * idx + i] = data[i];
+  int offset = dispArray[idx];
+  int dataSize = dispArray[idx + 1] - dispArray[idx];
+  for (int i = 0; i < dataSize; i++) {
+    store[offset + i] = data[i];
   }
-  CkNcpyBuffer src(data, k*sizeof(long int), dum_dum, CK_BUFFER_UNREG);
-
+  CkNcpyBuffer src(data, dataSize * sizeof(long int), dum_dum, CK_BUFFER_UNREG);
   switch (type) {
   case allGatherType::ALL_GATHER_RING: {
   thisProxy[(idx + 1) % n].recvRing(idx, src);
@@ -98,7 +100,7 @@ void AllGather::startGather() {
 }
 
 void AllGather::recvRing(int sender, CkNcpyBuffer src) {
-  CkNcpyBuffer dst(store + sender * k, k * sizeof(long int), zero_copy_callback, CK_BUFFER_UNREG);
+  CkNcpyBuffer dst(store + dispArray[sender], (dispArray[sender+1] - dispArray[sender])*sizeof(long int), zero_copy_callback, CK_BUFFER_UNREG);
   dst.get(src);
   if (((CkMyPe() + 1) % n) != sender) {
     thisProxy[(CkMyPe() + 1) % n].recvRing(sender, src);
@@ -110,7 +112,7 @@ void AllGather::Flood(int sender, CkNcpyBuffer src) {
     return;
   }
   recvFloodMsg[sender] = true;
-  CkNcpyBuffer dst(store + sender * k, k * sizeof(long int), zero_copy_callback, CK_BUFFER_UNREG);
+  CkNcpyBuffer dst(store + dispArray[sender], (dispArray[sender+1] - dispArray[sender])*sizeof(long int), zero_copy_callback, CK_BUFFER_UNREG);
   dst.get(src);
   for (int i = 0; i < n; i++) {
     if (graph[CkMyPe()][i] == 1 and i != sender) {

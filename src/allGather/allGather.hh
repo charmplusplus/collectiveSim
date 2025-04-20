@@ -20,9 +20,9 @@ enum allGatherType {
 
 class AllGather : public CBase_AllGather {
 private:
-  int k{};
   int n{};
   int idx{};
+  long int* dispArray;
   long int *store;
   int numRecvMsg{};
   CkCallback lib_done_callback;
@@ -44,7 +44,7 @@ private:
 public:
   AllGather_SDAG_CODE
 
-  AllGather(int k, int n, int type);
+  AllGather(int n, int type);
 
   void startGather();
 
@@ -56,7 +56,7 @@ public:
 
   void Flood(int sender, CkNcpyBuffer data);
 
-  void init(long int* result, long int* data, int idx, CkCallback cb);
+  void init(long int* result, long int* data, long int* dispArray, int idx, CkCallback cb);
 
   void initdone();
 };
