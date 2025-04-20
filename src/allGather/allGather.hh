@@ -20,11 +20,11 @@ enum allGatherType {
 
 class AllGather : public CBase_AllGather {
 private:
-  int k{};
   int n{};
+  int idx{};
+  long int* dispArray;
   long int *store;
   int numRecvMsg{};
-  double timeStamp{};
   CkCallback lib_done_callback;
   allGatherType type;
   int numHypercubeIter{};
@@ -44,19 +44,19 @@ private:
 public:
   AllGather_SDAG_CODE
 
-  AllGather(int k, int n, int type);
+  AllGather(int n, int type);
 
   void startGather();
 
-  void recvRing(int sender, CkNcpyBuffer data, double recvTime);
+  void recvRing(int sender, CkNcpyBuffer data);
 
   void local_buff_done(CkDataMsg *m);
 
   int gen_rand();
 
-  void Flood(int sender, CkNcpyBuffer data, double recvTime);
+  void Flood(int sender, CkNcpyBuffer data);
 
-  void init(long int* result, long int* data, CkCallback cb);
+  void init(long int* result, long int* data, long int* dispArray, int idx, CkCallback cb);
 
   void initdone();
 };
